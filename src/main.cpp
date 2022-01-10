@@ -14,9 +14,19 @@ int PERIOD_SEC = 5 * 60;
 int PIN_LED = 2;
 int NUM_LED = 1;
 
+uint32_t COLOR_GOOD = 0x008000;
+uint32_t COLOR_BETTER = 0xffff00;
+uint32_t COLOR_BAD = 0xff4100;
+uint32_t COLOR_TOOBAD = 0xff0000;
+
 SCD30 airSensor;
 WiFiClient client;
 Ambient* ambient = nullptr;
+
+template<typename T>
+T Key(const char* key, const T initial, const DynamicJsonDocument& json) {
+  return json.containsKey(key) ? static_cast<T>(json[key]) : initial;
+}
 
 bool loadSettings() {
   auto file = SPIFFS.open("/settings.json", "r");
@@ -30,15 +40,13 @@ bool loadSettings() {
     return false;
   }
 
-  if (json.containsKey("Inverval")) {
-    PERIOD_SEC = static_cast<int>(json["Inverval"]);
-  }
-  if (json.containsKey("LED_Pin")) {
-    PIN_LED = static_cast<int>(json["LED_Pin"]);
-  }
-  if (json.containsKey("LED_Num")) {
-    NUM_LED = static_cast<int>(json["LED_Num"]);
-  }
+  PERIOD_SEC = Key<int>("Interval", PERIOD_SEC, json);
+  PIN_LED = Key<int>("LED_Pin", PIN_LED, json);
+  NUM_LED = Key<int>("LED_Num", NUM_LED, json);
+  COLOR_GOOD = Key<uint32_t>("LED_Good", COLOR_GOOD, json);
+  COLOR_BETTER = Key<uint32_t>("LED_Better", COLOR_BETTER, json);
+  COLOR_BAD = Key<uint32_t>("LED_Bad", COLOR_BAD, json);
+  COLOR_TOOBAD = Key<uint32_t>("LED_TooBad", COLOR_TOOBAD, json);
 
   if (json.containsKey("SSID") && json.containsKey("PSK") &&
       json.containsKey("Amb_ID") && json.containsKey("Amb_KEY")) {
@@ -59,13 +67,13 @@ bool loadSettings() {
 
 uint32_t Color(int ppm) {
   if (ppm <= 1000)
-    return Adafruit_NeoPixel::Color(0, 128, 0);  // good: green
+    return COLOR_GOOD;
   else if (ppm <= 1500)
-    return Adafruit_NeoPixel::Color(255, 255, 0);  // slightly better: yellow
+    return COLOR_BETTER;
   else if (ppm <= 2500)
-    return Adafruit_NeoPixel::Color(255, 65, 0);  // bad: orange
+    return COLOR_BAD;
 
-  return Adafruit_NeoPixel::Color(255, 0, 0);  // very bad: red
+  return COLOR_TOOBAD;
 }
 
 void setup() {

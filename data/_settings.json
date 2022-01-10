@@ -3,7 +3,7 @@
   "PSK": "*** WiFi PSK ***",
   "Amb_ID": 0,
   "Amb_KEY": "*** Ambient write key ***",
-  "Inverval": 300,
+  "Interval": 300,
   "LED_Pin": 2,
   "LED_Num": 8
 }
