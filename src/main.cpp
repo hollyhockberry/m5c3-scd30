@@ -105,13 +105,13 @@ void loop() {
     return;
   }
 
-  Adafruit_NeoPixel led(NUM_LED, PIN_LED, NEO_GRB + NEO_KHZ800);
-  led.begin();
+  auto led = new Adafruit_NeoPixel(NUM_LED, PIN_LED, NEO_GRB + NEO_KHZ800);
+  led->begin();
   const auto color = Color(co2);
-  for (auto i = 0; i < led.numPixels(); ++i) {
-    led.setPixelColor(i, color);
+  for (auto i = 0; i < led->numPixels(); ++i) {
+    led->setPixelColor(i, color);
   }
-  led.show();
+  led->show();
 
   Serial.printf("CO2: %d ppm, ", co2);
   Serial.printf("Temperature: %f C, ", temper);
@@ -125,9 +125,6 @@ void loop() {
 
     Wire.end();
     WiFi.disconnect();
-
-    delete ambient;
-    ambient = nullptr;
   }
 
   Serial.println("Zzz...");
