@@ -83,7 +83,6 @@ void setup() {
 
   if (!loadSettings()) {
     ESP_LOGE("", "Failed to load configuration file.");
-    for (;;) {}
   }
   if (airSensor.begin() == false) {
     ESP_LOGE("", "Failed to begin SCD30.");
