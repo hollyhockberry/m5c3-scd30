@@ -59,3 +59,8 @@ WiFiの設定とAmbientのチャネルを```setting.json```に記述して指定
 
 Ambientの使い方に関しては https://ambidata.io をご覧ください。
 
+## 問題
+
+LEDが中途半端な状態になる時がありました。発生頻度が低いので原因不明です。。。
+
+![Test Image 1](img/led-issue.png)
