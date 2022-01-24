@@ -31,6 +31,19 @@ T Key(const char* key, const T initial, const DynamicJsonDocument& json) {
   return json.containsKey(key) ? static_cast<T>(json[key]) : initial;
 }
 
+bool beginWiFi(const char* ssid, const char* psk) {
+  const auto start = ::millis();
+  WiFi.begin(ssid, psk);
+  while (WiFi.status() != WL_CONNECTED) {
+    if ((::millis() - start) > 10000) {
+      ESP_LOGE("", "Failed to begin WiFi.");
+      return false;
+    }
+    ::delay(100);
+  }
+  return true;
+}
+
 bool loadSettings() {
   auto file = SPIFFS.open("/settings.json", "r");
   if (!file || file.size() == 0) {
@@ -69,12 +82,10 @@ bool loadSettings() {
     const int ID = json["Amb_ID"];
     const char* writeKey = json["Amb_KEY"];
 
-    WiFi.begin(SSID, PSK);
-    while (WiFi.status() != WL_CONNECTED) {
-      ::delay(100);
+    if (::beginWiFi(SSID, PSK)) {
+      ambient = new Ambient();
+      ambient->begin(ID, writeKey, &client);
     }
-    ambient = new Ambient();
-    ambient->begin(ID, writeKey, &client);
   }
   return true;
 }
