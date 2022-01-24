@@ -11,6 +11,7 @@
 #include <SPIFFS.h>
 
 int PERIOD_SEC = 5 * 60;
+int POST_PERIOD_SEC = PERIOD_SEC;
 int PIN_LED = 2;
 int NUM_LED = 1;
 
@@ -22,6 +23,8 @@ uint32_t COLOR_TOOBAD = 0xff0000;
 SCD30 airSensor;
 WiFiClient client;
 Ambient* ambient = nullptr;
+
+RTC_DATA_ATTR int wakeupCounter = 0;
 
 template<typename T>
 T Key(const char* key, const T initial, const DynamicJsonDocument& json) {
@@ -41,6 +44,8 @@ bool loadSettings() {
   }
 
   PERIOD_SEC = Key<int>("Interval", PERIOD_SEC, json);
+  POST_PERIOD_SEC = Key<int>("PostInterval", POST_PERIOD_SEC, json);
+
   PIN_LED = Key<int>("LED_Pin", PIN_LED, json);
   NUM_LED = Key<int>("LED_Num", NUM_LED, json);
   COLOR_GOOD = Key<uint32_t>("LED_Good", COLOR_GOOD, json);
@@ -48,7 +53,16 @@ bool loadSettings() {
   COLOR_BAD = Key<uint32_t>("LED_Bad", COLOR_BAD, json);
   COLOR_TOOBAD = Key<uint32_t>("LED_TooBad", COLOR_TOOBAD, json);
 
-  if (json.containsKey("SSID") && json.containsKey("PSK") &&
+  if (PERIOD_SEC <= 0 || POST_PERIOD_SEC <= 0) {
+    return false;
+  }
+  if (POST_PERIOD_SEC < PERIOD_SEC) {
+    POST_PERIOD_SEC = PERIOD_SEC;
+  }
+  wakeupCounter %= POST_PERIOD_SEC / PERIOD_SEC;
+
+  if (wakeupCounter == 0 &&
+      json.containsKey("SSID") && json.containsKey("PSK") &&
       json.containsKey("Amb_ID") && json.containsKey("Amb_KEY")) {
     const char* SSID = json["SSID"];
     const char* PSK = json["PSK"];
@@ -86,7 +100,7 @@ void setup() {
   }
   if (airSensor.begin() == false) {
     ESP_LOGE("", "Failed to begin SCD30.");
-    ::esp_restart();
+    ::esp_deep_sleep(0);
     for (;;) {}
   }
 }
@@ -125,6 +139,7 @@ void loop() {
     Wire.end();
     WiFi.disconnect();
   }
+  wakeupCounter++;
 
   Serial.println("Zzz...");
   auto interval = PERIOD_SEC * 1000000;

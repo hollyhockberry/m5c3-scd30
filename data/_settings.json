@@ -4,6 +4,7 @@
   "Amb_ID": 0,
   "Amb_KEY": "*** Ambient write key ***",
   "Interval": 300,
+  "PostInterval": 300,
   "LED_Pin": 2,
   "LED_Num": 8
 }
