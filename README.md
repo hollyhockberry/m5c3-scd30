@@ -29,13 +29,14 @@ pio run --target upload
 
 | Item | Key | default |
 |---|---|---|
-| 測定間隔(秒) | PERIOD_SEC | 300 |
-| LED COLOR (GOOD) | LED_GOOD | 0x008000 |
-| LED COLOR (BETTER) | LED_BETTER | 0xffff00 |
-| LED COLOR (BAD) | LED_BAD | 0xff4100 |
-| LED COLOR (TOOBAD) | LED_TOOBAD | 0xff0000 |
-| LED Port | PIN_LED | 2 | 
-| Number of LED | NUM_LED | 1 |
+| 測定間隔(秒) | Interval | 300 |
+| ログ間隔(秒) | PostInterval | 300 |
+| LED COLOR (GOOD) | LED_Good | 0x008000 |
+| LED COLOR (BETTER) | LED_Better | 0xffff00 |
+| LED COLOR (BAD) | LED_Bad | 0xff4100 |
+| LED COLOR (TOOBAD) | LED_TooBad | 0xff0000 |
+| LED Port | LED_Pin | 2 | 
+| Number of LED | LED_Num | 1 |
 
 書き込みは
 
@@ -52,10 +53,10 @@ WiFiの設定とAmbientのチャネルを```setting.json```に記述して指定
 
 | Item | Key |
 |---|---|---|
-|SSID| SSID | 
-|パスワード| PSK |
-|Amb_ID| AmbientチャネルID|
-|Amb_KEY| Ambientライトキー|
+| SSID | SSID | 
+| パスワード | PSK |
+| AmbientチャネルID | Amb_ID |
+| Ambientライトキー | Amb_KEY |
 
 Ambientの使い方に関しては https://ambidata.io をご覧ください。
 
