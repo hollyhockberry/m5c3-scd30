@@ -52,7 +52,7 @@ pio run --target uploadfs
 WiFiの設定とAmbientのチャネルを```setting.json```に記述して指定します。
 
 | Item | Key |
-|---|---|---|
+|---|---|
 | SSID | SSID | 
 | パスワード | PSK |
 | AmbientチャネルID | Amb_ID |
