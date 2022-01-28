@@ -1,24 +1,12 @@
-// Copyright (c) 2021 Inaba
+// Copyright (c) 2022 Inaba
 // This software is released under the MIT License.
 // http://opensource.org/licenses/mit-license.php
 
 #include <Arduino.h>
 #include <Adafruit_NeoPixel.h>
-#include <ArduinoJson.h>
 #include <Ambient.h>
-#include <FS.h>
 #include <SparkFun_SCD30_Arduino_Library.h>
-#include <SPIFFS.h>
-
-int PERIOD_SEC = 5 * 60;
-int POST_PERIOD_SEC = PERIOD_SEC;
-int PIN_LED = 2;
-int NUM_LED = 1;
-
-uint32_t COLOR_GOOD = 0x008000;
-uint32_t COLOR_BETTER = 0xffff00;
-uint32_t COLOR_BAD = 0xff4100;
-uint32_t COLOR_TOOBAD = 0xff0000;
+#include "settings.h"
 
 SCD30 airSensor;
 WiFiClient client;
@@ -26,9 +14,8 @@ Ambient* ambient = nullptr;
 
 RTC_DATA_ATTR int wakeupCounter = 0;
 
-template<typename T>
-T Key(const char* key, const T initial, const DynamicJsonDocument& json) {
-  return json.containsKey(key) ? static_cast<T>(json[key]) : initial;
+Settings& Storage() {
+  return Settings::Instance();
 }
 
 bool beginWiFi(const char* ssid, const char* psk) {
@@ -45,46 +32,20 @@ bool beginWiFi(const char* ssid, const char* psk) {
 }
 
 bool loadSettings() {
-  auto file = SPIFFS.open("/settings.json", "r");
-  if (!file || file.size() == 0) {
+  Storage().load();
+
+  if (Storage().MeasureCycle() <= 0 || Storage().PostCycle() <= 0) {
     return false;
   }
-
-  DynamicJsonDocument json(1300);
-  auto err = ::deserializeJson(json, file);
-  if (err) {
-    return false;
-  }
-
-  PERIOD_SEC = Key<int>("Interval", PERIOD_SEC, json);
-  POST_PERIOD_SEC = Key<int>("PostInterval", POST_PERIOD_SEC, json);
-
-  PIN_LED = Key<int>("LED_Pin", PIN_LED, json);
-  NUM_LED = Key<int>("LED_Num", NUM_LED, json);
-  COLOR_GOOD = Key<uint32_t>("LED_Good", COLOR_GOOD, json);
-  COLOR_BETTER = Key<uint32_t>("LED_Better", COLOR_BETTER, json);
-  COLOR_BAD = Key<uint32_t>("LED_Bad", COLOR_BAD, json);
-  COLOR_TOOBAD = Key<uint32_t>("LED_TooBad", COLOR_TOOBAD, json);
-
-  if (PERIOD_SEC <= 0 || POST_PERIOD_SEC <= 0) {
-    return false;
-  }
-  if (POST_PERIOD_SEC < PERIOD_SEC) {
-    POST_PERIOD_SEC = PERIOD_SEC;
-  }
-  wakeupCounter %= POST_PERIOD_SEC / PERIOD_SEC;
+  wakeupCounter %= Storage().PostCycle() / Storage().MeasureCycle();
 
   if (wakeupCounter == 0 &&
-      json.containsKey("SSID") && json.containsKey("PSK") &&
-      json.containsKey("Amb_ID") && json.containsKey("Amb_KEY")) {
-    const char* SSID = json["SSID"];
-    const char* PSK = json["PSK"];
-    const int ID = json["Amb_ID"];
-    const char* writeKey = json["Amb_KEY"];
-
-    if (::beginWiFi(SSID, PSK)) {
+      Storage().AP_SSID().length() > 0 && Storage().AP_PSK().length() > 0 &&
+      Storage().AmbientID() >= 0 && Storage().AmbientKey().length() > 0) {
+    if (::beginWiFi(Storage().AP_SSID().c_str(), Storage().AP_PSK().c_str())) {
       ambient = new Ambient();
-      ambient->begin(ID, writeKey, &client);
+      ambient->begin(
+        Storage().AmbientID(), Storage().AmbientKey().c_str(), &client);
     }
   }
   return true;
@@ -92,18 +53,19 @@ bool loadSettings() {
 
 uint32_t Color(int ppm) {
   if (ppm <= 1000)
-    return COLOR_GOOD;
+    return Storage().Color_Good();
   else if (ppm <= 1500)
-    return COLOR_BETTER;
+    return Storage().Color_Better();
   else if (ppm <= 2500)
-    return COLOR_BAD;
+    return Storage().Color_Bad();
 
-  return COLOR_TOOBAD;
+  return Storage().Color_TooBad();
 }
 
 void setup() {
   Serial.begin(115200);
-  SPIFFS.begin(true);
+  Storage().begin();
+
   Wire.begin(1, 0);
 
   if (!loadSettings()) {
@@ -129,7 +91,8 @@ void loop() {
     return;
   }
 
-  auto led = new Adafruit_NeoPixel(NUM_LED, PIN_LED, NEO_GRB + NEO_KHZ800);
+  auto led = new Adafruit_NeoPixel(
+    Storage().LedCount(), Storage().LedPin(), NEO_GRB + NEO_KHZ800);
   led->begin();
   const auto color = Color(co2);
   for (auto i = 0; i < led->numPixels(); ++i) {
@@ -153,7 +116,7 @@ void loop() {
   wakeupCounter++;
 
   Serial.println("Zzz...");
-  auto interval = PERIOD_SEC * 1000000;
+  auto interval = Storage().MeasureCycle() * 1000000;
   interval -= ::millis() * 1000;
   ::esp_deep_sleep(interval);
   for (;;) {}
