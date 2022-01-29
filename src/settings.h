@@ -10,7 +10,7 @@
 
 class Settings {
  public:
-  static Settings& Instance();
+  Settings() {}
 
   int MeasureCycle() const;
   int PostCycle() const;
@@ -29,8 +29,6 @@ class Settings {
   void load();
 
  private:
-  Settings() {}
-
   Settings(const Settings&);
   void operator =(const Settings&);
 };

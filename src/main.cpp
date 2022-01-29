@@ -6,14 +6,16 @@
 #include "settings.h"
 #include "sensor.h"
 
+Settings settings;
+
 void setup() {
   Serial.begin(115200);
-  Settings::Instance().begin();
-  Settings::Instance().load();
+  settings.begin();
+  settings.load();
 
-  Sensor::begin(Settings::Instance());
+  Sensor::begin(settings);
 }
 
 void loop() {
-  Sensor::loop(Settings::Instance());
+  Sensor::loop(settings);
 }

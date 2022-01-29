@@ -34,11 +34,6 @@ int color2int(const String str) {
 
 }  // namespace
 
-Settings& Settings::Instance() {
-  static Settings o;
-  return o;
-}
-
 void Settings::begin() {
   SPIFFS.begin(true);
 }
