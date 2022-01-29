@@ -65,10 +65,12 @@ bool ControlPanel::begin(Settings& settings, Adafruit_NeoPixel* led) {
   server.on("/setwifi", HTTP_ANY, [](AsyncWebServerRequest *request) {
     settings_->save(request);
     request->send(200);
+    ::esp_restart();
   });
   server.on("/set", HTTP_ANY, [](AsyncWebServerRequest *request) {
     settings_->save(request);
     request->send(200);
+    ::esp_restart();
   });
 
   server.begin();
