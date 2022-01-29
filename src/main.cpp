@@ -5,17 +5,27 @@
 #include <Arduino.h>
 #include "settings.h"
 #include "sensor.h"
+#include "controlpanel.h"
 
 Settings settings;
+bool serviceMode = false;
 
 void setup() {
   Serial.begin(115200);
   settings.begin();
   settings.load();
 
-  Sensor::begin(settings);
+  ::pinMode(3, INPUT_PULLUP);
+  serviceMode = (::digitalRead(3) == LOW)
+    ? ControlPanel::begin(settings) : false;
+
+  if (!serviceMode) {
+    Sensor::begin(settings);
+  }
 }
 
 void loop() {
-  Sensor::loop(settings);
+  if (!serviceMode) {
+    Sensor::loop(settings);
+  }
 }

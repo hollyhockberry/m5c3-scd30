@@ -6,6 +6,7 @@
 #define SETTINGS_H_
 
 #include <stdint.h>
+#include <ESPAsyncWebServer.h>
 #include <WString.h>
 
 class Settings {
@@ -27,6 +28,7 @@ class Settings {
 
   void begin();
   void load();
+  void save(AsyncWebServerRequest* request);
 
  private:
   Settings(const Settings&);

@@ -28,8 +28,22 @@ T Key(const char* key, const T initial, const DynamicJsonDocument& json) {
   return json.containsKey(key) ? static_cast<T>(json[key]) : initial;
 }
 
-int color2int(const String str) {
-  return ::strtol(str.substring(1).c_str(), nullptr, 16);
+void arg(int* param, const char* key, AsyncWebServerRequest* request) {
+  if (request->hasArg(key)) {
+    *param = request->arg(key).toInt();
+  }
+}
+
+void arg(String* param, const char* key, AsyncWebServerRequest* request) {
+  if (request->hasArg(key)) {
+    *param = request->arg(key);
+  }
+}
+
+void arg(uint32_t* param, const char* key, AsyncWebServerRequest* request) {
+  if (request->hasArg(key)) {
+    *param = ::strtol(request->arg(key).substring(1).c_str(), nullptr, 16);
+  }
 }
 
 }  // namespace
@@ -65,6 +79,39 @@ void Settings::load() {
   PSK = Key<const char*>("PSK", PSK.c_str(), json);
   AmbID = Key<int>("Amb_ID", AmbID, json);
   AmbKey = Key<const char*>("Amb_KEY", AmbKey.c_str(), json);
+}
+
+void Settings::save(AsyncWebServerRequest* request) {
+  arg(&SSID, "ssid", request);
+  arg(&PSK, "psk", request);
+  arg(&PERIOD_SEC, "meascyc", request);
+  arg(&POST_PERIOD_SEC, "postcyc", request);
+  arg(&AmbID, "ambid", request);
+  arg(&AmbKey, "ambkey", request);
+  arg(&PIN_LED, "ledpin", request);
+  arg(&NUM_LED, "ledcnt", request);
+  arg(&COLOR_GOOD, "c-good", request);
+  arg(&COLOR_BETTER, "c-better", request);
+  arg(&COLOR_BAD, "c-bad", request);
+  arg(&COLOR_TOOBAD, "c-2bad", request);
+
+  StaticJsonDocument<200> json;
+  json["Interval"] = PERIOD_SEC;
+  json["PostInterval"] = POST_PERIOD_SEC;
+  json["LED_Pin"] = PIN_LED;
+  json["LED_Num"] = NUM_LED;
+  json["LED_Good"] = COLOR_GOOD;
+  json["LED_Better"] = COLOR_BETTER;
+  json["LED_Bad"] = COLOR_BAD;
+  json["LED_TooBad"] = COLOR_TOOBAD;
+  json["SSID"] = SSID;
+  json["PSK"] = PSK;
+  json["Amb_ID"] = AmbID;
+  json["Amb_KEY"] = AmbKey;
+
+  auto fs = SPIFFS.open("/settings.json", "w");
+  serializeJson(json, fs);
+  fs.close();
 }
 
 int Settings::MeasureCycle() const {

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width">
+    <style type="text/css">
+      body { margin: 0; }
+      h3 {
+        background-color:#cccccc;
+        text-align: center;
+      }
+      h4 {
+        border-bottom: 1px solid;
+        text-indent: .5em;
+      }
+      p { margin: .5em; }
+      span { margin-left: .5em; }
+      .btn { text-align: center; }
+    </style>
+  </head>
+  <body>
+    <h3>Control Panel</h3>
+    <form action='/setwifi' method='post'>
+      <h4>WiFi settings</h4>
+      <p>
+        SSID<br><input name='ssid' value='%SSID%'><br>
+        Password<br><input type='password' name='psk'><br>
+      </p>
+      <p>
+        <input type='submit' value='Set'>
+      </p>
+    </form>
+    <form action='/set' method='post'>
+      <h4>Measurement settings</h4>
+      <p>
+        Measurement cycle (sec)<br><input type='number' name='meascyc' min='0' value='%MEAS_CYC%'><br>
+        Logging cycle (sec)<br><input type='number' name='postcyc' min='300' value='%POST_CYC%'><br>
+        Ambient ID<br><input type='number' name='ambid' value='%AMB_ID%'><br>
+        Ambient write key<br><input name='ambkey' value='%AMB_KEY%'><br>
+      </p>
+      <h4>LED settings</h4>
+      <p>
+        Pin<br><input type='number' name='ledpin' value='%PIN_LED%'><br>
+        Count<br><input type='number' name='ledcnt' min='1' value='%NUM_LED%'><br>
+      </p>
+
+      <p>
+        Color<br>
+        <input type='color' name='c-good' value='#%COLOR_GOOD%'><span>Good</span><br>
+        <input type='color' name='c-better' value='#%COLOR_BETTER%'><span>Better</span><br>
+        <input type='color' name='c-bad' value='#%COLOR_BAD%'><span>Bad</span><br>
+        <input type='color' name='c-2bad' value='#%COLOR_2BAD%'><span>Too bad</span><br>
+      </p>
+
+      <p>
+        <input type='submit' value='Set'>
+      </p>
+    </form>
+  </body>
+</html>
