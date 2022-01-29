@@ -47,7 +47,7 @@ String templateProcessor(const String& var) {
 
 }  // namespace
 
-bool ControlPanel::begin(Settings& settings) {
+bool ControlPanel::begin(Settings& settings, Adafruit_NeoPixel* led) {
   if (!WiFi.mode(WIFI_AP)) {
     return false;
   }
@@ -72,6 +72,14 @@ bool ControlPanel::begin(Settings& settings) {
   });
 
   server.begin();
+
+  if (led) {
+    led->begin();
+    for (auto i = 0; i < led->numPixels(); ++i) {
+      led->setPixelColor(i, 0xff00ff);
+    }
+    led->show();
+  }
   return true;
 }
 

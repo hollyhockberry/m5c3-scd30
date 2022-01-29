@@ -68,7 +68,7 @@ void Sensor::begin(const Settings& settings) {
   }
 }
 
-void Sensor::loop(const Settings& settings) {
+void Sensor::loop(const Settings& settings, Adafruit_NeoPixel* led) {
   if (!airSensor.dataAvailable()) {
     return;
   }
@@ -80,15 +80,14 @@ void Sensor::loop(const Settings& settings) {
     return;
   }
 
-  auto led = new Adafruit_NeoPixel(
-    settings.LedCount(), settings.LedPin(), NEO_GRB + NEO_KHZ800);
-
-  led->begin();
-  const auto color = Color(co2, settings);
-  for (auto i = 0; i < led->numPixels(); ++i) {
-    led->setPixelColor(i, color);
+  if (led) {
+    led->begin();
+    const auto color = Color(co2, settings);
+    for (auto i = 0; i < led->numPixels(); ++i) {
+      led->setPixelColor(i, color);
+    }
+    led->show();
   }
-  led->show();
 
   Serial.printf("CO2: %d ppm, ", co2);
   Serial.printf("Temperature: %f C, ", temper);
