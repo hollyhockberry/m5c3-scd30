@@ -104,10 +104,10 @@ void Settings::save(AsyncWebServerRequest* request) {
   json["LED_Better"] = COLOR_BETTER;
   json["LED_Bad"] = COLOR_BAD;
   json["LED_TooBad"] = COLOR_TOOBAD;
-  json["SSID"] = SSID;
-  json["PSK"] = PSK;
+  json["SSID"] = SSID.c_str();
+  json["PSK"] = PSK.c_str();
   json["Amb_ID"] = AmbID;
-  json["Amb_KEY"] = AmbKey;
+  json["Amb_KEY"] = AmbKey.c_str();
 
   auto fs = SPIFFS.open("/settings.json", "w");
   serializeJson(json, fs);
